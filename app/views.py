@@ -7,9 +7,13 @@ This file creates your application.
 
 from app import app
 from flask import render_template, request
+from app.forms import UploadForm
+from werkzeug.utils import secure_filename
 
 ###
 # Routing for your application.
+
+
 ###
 
 
@@ -23,7 +27,6 @@ def index(path):
     Because we use HTML5 history mode in vue-router we need to configure our
     web server to redirect all routes to index.html. Hence the additional route
     "/<path:path".
-
     Also we will render the initial webpage and then let VueJS take control.
     """
     return render_template('index.html')
@@ -44,6 +47,27 @@ def form_errors(form):
 
     return error_messages
 
+@app.route('/api/upload', methods=['POST'])
+def upload():
+    # Instantiate your form class
+    # Validate file upload on submit
+    Upload = UploadForm()
+    if request.method == 'POST' and Upload.validate_on_submit():
+        # Get file data and save to your uploads folder
+        photo = Upload.photo.data
+        description = Upload.description.data
+        filename = secure_filename(file.filename)
+        print(filename)
+        photo.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
+        return '''{
+            "message": "File Upload Successful"
+            "filename": '''+filename+'''
+            "description": '''+description+'''
+        }'''
+    else:
+        return '''{
+            "errors":'''+[{form_errors(Upload)},{}
+        ]+'''}'''
 
 ###
 # The functions below should be applicable to all Flask apps.
